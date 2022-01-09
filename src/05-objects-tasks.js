@@ -6,7 +6,6 @@
  *                                                                                                *
  ************************************************************************************************ */
 
-
 /**
  * Returns the rectangle object with width and height parameters and getArea() method
  *
@@ -20,10 +19,11 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  this.width = width;
+  this.height = height;
+  this.getArea = () => this.height * this.width;
 }
-
 
 /**
  * Returns the JSON representation of specified object
@@ -35,10 +35,9 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
-
 
 /**
  * Returns the object of specified type from JSON representation
@@ -51,10 +50,11 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  const obj = JSON.parse(json);
+  Object.setPrototypeOf(obj, proto);
+  return obj;
 }
-
 
 /**
  * Css selectors builder
@@ -110,36 +110,129 @@ function fromJSON(/* proto, json */) {
  *  For more examples see unit tests.
  */
 
+class Selector {
+  constructor() {
+    this.value = '';
+    this.errorMessage = 'Element, id and pseudo-element should not occur more then one time inside the selector';
+    this.orderErrorMessage = 'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element';
+  }
+
+  addValue(value, symbol = '') {
+    this.value += `${symbol}${value}`;
+    return this;
+  }
+
+  element(value) {
+    if (
+      this.value.match('#')
+      || this.value.match(/\./)
+      || this.value.match(/\[/)
+      || this.value.match(':')
+      || this.value.match('::')
+    ) {
+      return this.incorrectSelectorsOrder();
+    }
+    if (!this.value) return this.addValue(value);
+    return this.incorrectSelector();
+  }
+
+  id(value) {
+    if (this.value.match(/\./)
+      || this.value.match(/\[/)
+      || this.value.match(':')
+      || this.value.match('::')
+    ) {
+      return this.incorrectSelectorsOrder();
+    }
+    if (!this.value.match('#')) return this.addValue(value, '#');
+    return this.incorrectSelector();
+  }
+
+  class(value) {
+    if (this.value.match(/\[/)
+    || this.value.match(':')
+    || this.value.match('::')
+    ) {
+      return this.incorrectSelectorsOrder();
+    }
+    return this.addValue(value, '.');
+  }
+
+  attr(value) {
+    if (this.value.match(':')
+    || this.value.match('::')
+    ) {
+      return this.incorrectSelectorsOrder();
+    }
+    this.value += `[${value}]`;
+    return this;
+  }
+
+  pseudoClass(value) {
+    if (this.value.match('::')
+    ) {
+      return this.incorrectSelectorsOrder();
+    }
+    return this.addValue(value, ':');
+  }
+
+  pseudoElement(value) {
+    if (!this.value.match('::')) return this.addValue(value, '::');
+    return this.incorrectSelector();
+  }
+
+  stringify() {
+    const { value } = this;
+    return value;
+  }
+
+  incorrectSelector() {
+    throw new Error(this.errorMessage);
+  }
+
+  incorrectSelectorsOrder() {
+    throw new Error(this.orderErrorMessage);
+  }
+}
+
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    const selector = new Selector();
+    return selector.element(value);
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    const selector = new Selector();
+    return selector.id(value);
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    const selector = new Selector();
+    return selector.class(value);
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    const selector = new Selector();
+    return selector.attr(value);
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    const selector = new Selector();
+    return selector.pseudoClass(value);
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    const selector = new Selector();
+    return selector.pseudoElement(value);
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const first = selector1.stringify();
+    const comb = ` ${combinator} `;
+    const second = selector2.stringify();
+    return new Selector().element(first + comb + second);
   },
 };
-
 
 module.exports = {
   Rectangle,
