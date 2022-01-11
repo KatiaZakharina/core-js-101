@@ -36,7 +36,7 @@ function findElement(arr, value) {
  */
 function generateOdds(len) {
   return Array(len)
-    .fill()
+    .fill(0)
     .map((_, index) => 2 * index + 1);
 }
 
@@ -353,11 +353,7 @@ function sortDigitNamesByNumericOrder(arr) {
  *   [ 1, 10, 100, 1000 ]  => 1111
  */
 function getItemsSum(arr) {
-  return arr.reduce((accum, curr) => {
-    let acc = accum;
-    acc += curr;
-    return acc;
-  }, 0);
+  return arr.reduce((acc, curr) => acc + curr, 0);
 }
 
 /**

@@ -29,9 +29,10 @@
  */
 function willYouMarryMe(isPositiveAnswer) {
   return new Promise((res, rej) => {
-    if (typeof isPositiveAnswer !== 'boolean') {
+    if (typeof isPositiveAnswer === 'boolean') {
       res(isPositiveAnswer ? 'Hooray!!! She said "Yes"!' : 'Oh no, she said "No".');
-    } else rej(Error('Wrong parameter is passed! Ask her again.'));
+    }
+    rej(Error('Wrong parameter is passed! Ask her again.'));
   });
 }
 
@@ -95,7 +96,7 @@ function getFastestPromise(array) {
  *
  */
 function chainPromises(array, action) {
-  array.then((arr) => arr.reduce((accum, curr) => {
+  return Promise.allSettled(array).then((arr) => arr.reduce((accum, curr) => {
     let acc = accum;
     acc = action(acc, curr.value);
     return acc;
